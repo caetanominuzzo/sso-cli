@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sso-cli"
+version = "1.0.0"
+description = "SSO auth CLI - Keycloak/OIDC token & roles"
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+authors = [
+    {name = "SSO CLI Contributors"}
+]
+keywords = ["sso", "auth", "keycloak", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "httpx>=0.24.0",
+    "pyyaml>=6.0.0",
+    "pyperclip>=1.8.2",
+    "rich>=13.0.0",
+    "inquirer>=3.0.0",
+    "keyring>=24.0.0",
+]
+
+[project.scripts]
+sso = "sso_cli.cli:main"
+
+[tool.setuptools]
+packages = ["sso_cli"]
+
+[tool.setuptools.package-data]
+sso_cli = ["py.typed"]
