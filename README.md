@@ -8,7 +8,16 @@ CLI tool for authenticating with Keycloak/OIDC providers, fetching access tokens
 
 ```bash
 pip install sso-cli
+
+# After installation, configure PATH automatically:
+sso-setup-path
+
+# Then reload your shell configuration:
+# For zsh/bash: source ~/.zshrc  or  source ~/.bashrc
+# For Windows: restart your terminal
 ```
+
+**Note:** If the `sso` command is not found after installation, run `sso-setup-path` to automatically add the Python scripts directory to your PATH.
 
 ## Usage
 

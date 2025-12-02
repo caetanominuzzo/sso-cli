@@ -36,6 +36,7 @@ dependencies = [
 
 [project.scripts]
 sso = "sso_cli.cli:main"
+sso-setup-path = "sso_cli.setup_path:setup_path"
 
 [tool.setuptools]
 packages = ["sso_cli"]
