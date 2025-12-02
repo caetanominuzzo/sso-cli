@@ -5,6 +5,11 @@ import asyncio
 import argparse
 import logging
 from typing import List
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError:
+    # Fallback for Python < 3.8
+    from importlib_metadata import version, PackageNotFoundError
 import inquirer
 from rich.console import Console
 from rich.prompt import Prompt
@@ -34,6 +39,14 @@ class ModernSelector:
         except (KeyboardInterrupt, EOFError):
             self.console.print("\n[yellow]Exiting...[/yellow]")
             sys.exit(0)
+
+
+def get_version():
+    """Get the version of the installed package."""
+    try:
+        return version("sso-cli")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 def show_help():
@@ -66,6 +79,7 @@ def show_help():
     console.print(cmd4)
     console.print("\n[bold]Options:[/bold]")
     console.print("  -h, --help                          Show help")
+    console.print("  -v, --version                       Show version")
     console.print()
 
 
@@ -148,11 +162,16 @@ async def main_async():
     parser.add_argument('-l', '--list', metavar='TYPE', help='List: env/envs or user/users')
     parser.add_argument('-d', '--remove', nargs='+', metavar=('TYPE', 'ID'), help='Remove: env <id> or user <env> <user>')
     parser.add_argument('-h', '--help', action='store_true', help='Show help')
+    parser.add_argument('-v', '--version', action='store_true', help='Show version')
     
     args = parser.parse_args()
     
     if args.help:
         show_help()
+        return
+    
+    if args.version:
+        print(f"sso-cli {get_version()}")
         return
     
     if args.list:
