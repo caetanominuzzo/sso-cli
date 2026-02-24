@@ -1,5 +1,8 @@
 # sso-cli
 
+[![PyPI version](https://badge.fury.io/py/sso-cli.svg)](https://pypi.org/project/sso-cli/)
+[![Downloads](https://static.pepy.tech/badge/sso-cli)](https://pepy.tech/project/sso-cli)
+
 SSO auth CLI - Keycloak/OIDC tokens & roles.
 
 CLI tool for authenticating with Keycloak/OIDC providers, fetching access tokens, and listing user roles. Supports multiple environments, password and client credentials authentication, with secrets stored in the system keyring. With prefix matching for quick access and organized role display from both JWT tokens and userinfo endpoints.
