@@ -34,6 +34,12 @@ dependencies = [
     "keyring>=24.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/caetanominuzzo/sso-cli"
+Repository = "https://github.com/caetanominuzzo/sso-cli"
+Issues = "https://github.com/caetanominuzzo/sso-cli/issues"
+Changelog = "https://github.com/caetanominuzzo/sso-cli/releases"
+
 [project.scripts]
 sso = "sso_cli.cli:cli"
 sso-cli = "sso_cli.cli:cli"
