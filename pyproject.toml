@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sso-cli"
-version = "1.2.8"
+version = "1.2.9"
 description = "SSO auth CLI - Keycloak/OIDC token & roles"
 readme = "README.md"
 requires-python = ">=3.7"
