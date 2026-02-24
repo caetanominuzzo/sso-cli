@@ -12,10 +12,14 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   bump-and-release:
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/sso-cli
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,3 +57,18 @@ jobs:
           gh release create "v${{ steps.version.outputs.new }}" \
             --title "v${{ steps.version.outputs.new }}" \
             --generate-notes
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build package
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
