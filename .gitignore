@@ -10,4 +10,5 @@ venv/
 *.swo
 .DS_Store
 sso_config.yaml
+.history
 
