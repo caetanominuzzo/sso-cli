@@ -3,9 +3,26 @@
 [![PyPI version](https://badge.fury.io/py/sso-cli.svg)](https://pypi.org/project/sso-cli/)
 [![Downloads](https://static.pepy.tech/badge/sso-cli)](https://pepy.tech/project/sso-cli)
 
-SSO auth CLI - Keycloak/OIDC tokens & roles.
+CLI tool to fetch Keycloak/OIDC tokens — built for developers and agentic AI workflows.
 
-CLI tool for authenticating with Keycloak/OIDC providers, fetching access tokens, and listing user roles. Supports multiple environments, password and client credentials authentication, with secrets stored in the system keyring. With prefix matching for quick access and organized role display from both JWT tokens and userinfo endpoints.
+## Why
+
+The primary use case is **giving agentic LLMs (Cursor, Windsurf, Copilot, etc.) secure access to protected APIs** without exposing credentials.
+
+Ask your AI agent to call any SSO-protected endpoint inline:
+
+```
+Test this endpoint using the bearer token from $(sso dev test@dev.com)
+```
+
+```
+curl https://api.dev.example.com/orders \
+  -H "Authorization: Bearer $(sso dev test@dev.com)"
+```
+
+The token is fetched on-demand from the system keyring — **no credentials, no `.env` files, no copy-paste** in your prompts or chat history.
+
+Works with any Keycloak/OIDC realm across multiple environments (`dev`, `staging`, `prod`).
 
 ## Install
 
