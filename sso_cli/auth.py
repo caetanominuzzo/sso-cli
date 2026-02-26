@@ -8,7 +8,7 @@ import base64
 import json
 import logging
 import httpx
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, List, Tuple
 
 from .config import load_config, Environments, EnvironmentUsers
 from .secrets import get_secret
@@ -76,3 +76,45 @@ class SSOAuthenticator:
         payload += "=" * ((4 - len(payload) % 4) % 4)
         decoded = base64.urlsafe_b64decode(payload)
         return json.loads(decoded)
+
+    @staticmethod
+    def _extract_roles_from_payload(payload: Dict[str, Any]) -> List[str]:
+        roles = []
+        if isinstance(payload.get("realm_access"), dict):
+            roles.extend(payload["realm_access"].get("roles", []))
+        if isinstance(payload.get("resource_access"), dict):
+            for resource, access in payload["resource_access"].items():
+                if isinstance(access, dict):
+                    for role in access.get("roles", []):
+                        roles.append(f"{resource}:{role}")
+        return sorted(roles)
+
+    async def get_user_roles(self, env_key: str, user_key: str) -> Dict[str, List[str]]:
+        env = self.environments[env_key]
+        user = self.environment_users[env_key][user_key]
+        token = await self.get_token(env_key, user_key)
+        base_url = env["sso_url"]
+
+        jwt_roles = self._extract_roles_from_payload(self.extract_user_from_token(token))
+
+        if user["auth_type"] == "client":
+            # Client credentials: use token introspection endpoint
+            introspect_url = f"{base_url}/protocol/openid-connect/token/introspect"
+            cred1, cred2, _ = self.get_user_credentials(env_key, user_key)
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(introspect_url, data={
+                    "token": token,
+                    "client_id": cred1,
+                    "client_secret": cred2,
+                })
+                resp.raise_for_status()
+                server_roles = self._extract_roles_from_payload(resp.json())
+            return {"jwt": jwt_roles, "introspection": server_roles}
+        else:
+            # User credentials: use userinfo endpoint
+            userinfo_url = f"{base_url}/protocol/openid-connect/userinfo"
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(userinfo_url, headers={"Authorization": f"Bearer {token}"})
+                resp.raise_for_status()
+                server_roles = self._extract_roles_from_payload(resp.json())
+            return {"jwt": jwt_roles, "userinfo": server_roles}

@@ -36,10 +36,11 @@ def show_help() -> None:
     console.print()
     console.print(Panel(Text("SSO Authentication Tool", style="bold green"), border_style="green"))
     console.print("\n[bold]Usage:[/bold]")
-    console.print("  sso [env] [user]   # non-interactive")
-    console.print("  sso                # interactive")
-    console.print("  sso --setup        # add environments/users to existing config")
-    console.print("  sso --reset        # backup config + start fresh")
+    console.print("  sso [env] [user]        # get token (non-interactive)")
+    console.print("  sso [env] [user] -r     # list roles (JWT + UserInfo)")
+    console.print("  sso                     # interactive")
+    console.print("  sso --setup             # add environments/users to existing config")
+    console.print("  sso --reset             # backup config + start fresh")
     if auth.environments:
         console.print("\n[bold]Environments:[/bold]")
         for k, v in auth.environments.items():
@@ -50,12 +51,33 @@ def show_help() -> None:
     console.print()
 
 
-async def _non_interactive(env_arg: str, user_arg: str) -> None:
+async def _non_interactive(env_arg: str, user_arg: str, *, roles: bool = False) -> None:
     auth = SSOAuthenticator()
     env_key = _resolve_prefix(env_arg, list(auth.environments), "environment")
     user_key = _resolve_prefix(user_arg, list(auth.environment_users.get(env_key, {})), "user")
-    token = await auth.get_token(env_key, user_key)
-    print(token)
+    if roles:
+        await _display_roles(auth, env_key, user_key)
+    else:
+        token = await auth.get_token(env_key, user_key)
+        print(token)
+
+
+async def _display_roles(auth: SSOAuthenticator, env_key: str, user_key: str) -> None:
+    roles_data = await auth.get_user_roles(env_key, user_key)
+    console.print()
+    console.print("[bold green]Roles[/bold green]")
+
+    for label, key in [("JWT Token", "jwt"), ("UserInfo", "userinfo"), ("Introspection", "introspection")]:
+        if key not in roles_data:
+            continue
+        console.print(f"\n[bold]{label}:[/bold]")
+        if roles_data[key]:
+            for r in roles_data[key]:
+                console.print(f"  [cyan]\u2022[/cyan] {r}")
+        else:
+            console.print("  [dim]No roles[/dim]")
+
+    console.print()
 
 
 async def _interactive() -> None:
@@ -101,6 +123,7 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description="SSO Authentication Tool", add_help=False)
     parser.add_argument("environment", nargs="?")
     parser.add_argument("user", nargs="?")
+    parser.add_argument("-r", "--roles", action="store_true")
     parser.add_argument("--help", action="store_true")
     parser.add_argument("--setup", action="store_true")
     parser.add_argument("--reset", action="store_true")
@@ -132,7 +155,7 @@ async def main() -> None:
 
     if args.environment and args.user:
         try:
-            await _non_interactive(args.environment, args.user)
+            await _non_interactive(args.environment, args.user, roles=args.roles)
         except Exception as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)

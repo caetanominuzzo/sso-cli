@@ -49,8 +49,9 @@ sso prod user@example.com
 sso p u          # → sso prod user@example.com (if unique)
 sso prod u       # → error if ambiguous
 
-# List roles (JWT + UserInfo)
-sso prod user@example.com -r
+# List roles (JWT + UserInfo/Introspection)
+sso prod user@example.com -r    # users: JWT + UserInfo
+sso prod api-client -r           # clients: JWT + Introspection
 
 # List/Remove
 sso -l env
