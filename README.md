@@ -86,3 +86,9 @@ users:
 ```
 
 Secrets (passwords and client secrets) are stored securely in the system keyring. Environments and users are automatically created on first use through an interactive setup flow. The tool supports optional client_id configuration per environment for Keycloak instances that require it.
+
+---
+
+## See Also
+
+- [Agent State](https://agentstate.tech/) — an open standard that gives AI agents persistent memory, tools, and organizational context across sessions via a shared Git repository.
