@@ -3,26 +3,29 @@
 [![PyPI version](https://badge.fury.io/py/sso-cli.svg)](https://pypi.org/project/sso-cli/)
 [![Downloads](https://static.pepy.tech/badge/sso-cli)](https://pepy.tech/project/sso-cli)
 
-CLI tool to fetch Keycloak/OIDC tokens — built for developers and agentic AI workflows.
+Get OAuth / OIDC access tokens from the terminal.
 
-## Why
+When working with APIs protected by Keycloak or other SSO providers,
+developers often need to manually copy tokens from the browser.
+sso-cli lets you fetch those tokens directly from the command line.
 
-The primary use case is **giving agentic LLMs (Cursor, Windsurf, Copilot, etc.) secure access to protected APIs** without exposing credentials.
-
-Ask your AI agent to call any SSO-protected endpoint inline:
-
-```
-Test this endpoint using the bearer token from $(sso dev test@dev.com)
+```bash
+pip install sso-cli
 ```
 
+```bash
+$ sso prod user@example.com
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
+
+```bash
 curl https://api.dev.example.com/orders \
   -H "Authorization: Bearer $(sso dev test@dev.com)"
 ```
 
-The token is fetched on-demand from the system keyring — **no credentials, no `.env` files, no copy-paste** in your prompts or chat history.
+No credentials in your prompts, no `.env` files, no copy-paste. The token is fetched on-demand from the system keyring.
 
-Works with any Keycloak/OIDC realm across multiple environments (`dev`, `staging`, `prod`).
+PyPI package: https://pypi.org/project/sso-cli/
 
 ## Use Cases
 
@@ -34,13 +37,17 @@ Works with any Keycloak/OIDC realm across multiple environments (`dev`, `staging
 - Access multiple environments (dev, staging, prod) with a single command
 - List JWT roles and claims for debugging permission issues
 
+## Why This Exists
+
+Most SSO providers require logging in through a browser just to retrieve an access token. For developers writing scripts, testing APIs, or working with AI agents, this is inconvenient and breaks the flow.
+
+sso-cli solves that by providing a CLI that fetches tokens from any Keycloak/OIDC realm, stores credentials securely in the system keyring, and works across multiple environments.
+
 ## Install
 
 ```bash
 pip install sso-cli
 ```
-
-PyPI package: https://pypi.org/project/sso-cli/
 
 After installation, configure PATH automatically:
 
@@ -78,6 +85,16 @@ sso -d user prod user@example.com
 sso
 ```
 
+### AI Agent Integration
+
+Ask your AI agent to call any SSO-protected endpoint inline:
+
+```
+Test this endpoint using the bearer token from $(sso dev test@dev.com)
+```
+
+Works with Cursor, Windsurf, Copilot, Claude Code, and any agent that can run shell commands.
+
 ## Config
 
 Configuration is stored in `~/sso_config.yaml` (auto-created by the app). All setup is done through the interactive flow - no manual YAML editing required.
@@ -107,4 +124,4 @@ Secrets (passwords and client secrets) are stored securely in the system keyring
 
 ## See Also
 
-- [Agent State](https://agentstate.tech/) — an open standard that gives AI agents persistent memory, tools, and organizational context across sessions via a shared Git repository.
+- [Agent State](https://agentstate.tech/) — an open toolbox that gives AI agents persistent memory, tools, and organizational context across sessions via a shared Git repository.
