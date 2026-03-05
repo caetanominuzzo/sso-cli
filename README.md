@@ -38,8 +38,13 @@ Works with any Keycloak/OIDC realm across multiple environments (`dev`, `staging
 
 ```bash
 pip install sso-cli
+```
 
-# After installation, configure PATH automatically:
+PyPI package: https://pypi.org/project/sso-cli/
+
+After installation, configure PATH automatically:
+
+```bash
 sso-setup-path
 
 # Then reload your shell configuration:
