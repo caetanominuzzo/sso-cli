@@ -24,6 +24,16 @@ The token is fetched on-demand from the system keyring — **no credentials, no 
 
 Works with any Keycloak/OIDC realm across multiple environments (`dev`, `staging`, `prod`).
 
+## Use Cases
+
+- Test a protected API endpoint without copy-pasting tokens
+- Authenticate CLI scripts against Keycloak or any OIDC provider
+- Give AI agents (Cursor, Claude Code, Copilot) access to SSO-protected URLs
+- Fetch a bearer token for curl or httpie one-liners
+- Automate token retrieval in CI/CD pipelines
+- Access multiple environments (dev, staging, prod) with a single command
+- List JWT roles and claims for debugging permission issues
+
 ## Install
 
 ```bash
