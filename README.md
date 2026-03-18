@@ -3,11 +3,9 @@
 [![PyPI version](https://badge.fury.io/py/sso-cli.svg)](https://pypi.org/project/sso-cli/)
 [![Downloads](https://static.pepy.tech/badge/sso-cli)](https://pepy.tech/project/sso-cli)
 
-Get OAuth / OIDC access tokens from the terminal.
+**Enterprise SSO tokens in one command.**
 
-When working with APIs protected by Keycloak or other SSO providers,
-developers often need to manually copy tokens from the browser.
-sso-cli lets you fetch those tokens directly from the command line.
+For developers, scripts, and AI agents.
 
 ```bash
 pip install sso-cli
@@ -18,30 +16,49 @@ $ sso prod user@example.com
 eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
+No `.env` files. No multi-step flows. Fresh tokens, fetched on demand from the system keyring.
+
+---
+
+## Three ways to use it
+
+### For developers
+
+Test any protected endpoint without leaving the terminal:
+
 ```bash
 curl https://api.dev.example.com/orders \
   -H "Authorization: Bearer $(sso dev test@dev.com)"
 ```
 
-No credentials in your prompts, no `.env` files, no copy-paste. The token is fetched on-demand from the system keyring.
+### For scripts and pipelines
 
-PyPI package: https://pypi.org/project/sso-cli/
+Drop it into any automation — the token is always fresh:
 
-## Use Cases
+```bash
+BEARER=$(sso prod service-account)
+curl -H "Authorization: Bearer $BEARER" https://api.example.com/data
+```
 
-- Test a protected API endpoint without copy-pasting tokens
-- Authenticate CLI scripts against Keycloak or any OIDC provider
-- Give AI agents (Cursor, Claude Code, Copilot) access to SSO-protected URLs
-- Fetch a bearer token for curl or httpie one-liners
-- Automate token retrieval in CI/CD pipelines
-- Access multiple environments (dev, staging, prod) with a single command
-- List JWT roles and claims for debugging permission issues
+### For AI agents
 
-## Why This Exists
+Give Cursor, Claude Code, Copilot, or any agent access to SSO-protected APIs:
 
-Most SSO providers require logging in through a browser just to retrieve an access token. For developers writing scripts, testing APIs, or working with AI agents, this is inconvenient and breaks the flow.
+```
+Test this endpoint using the bearer token from $(sso dev test@dev.com)
+```
 
-sso-cli solves that by providing a CLI that fetches tokens from any Keycloak/OIDC realm, stores credentials securely in the system keyring, and works across multiple environments.
+Works with any agent that can run shell commands.
+
+---
+
+## Why sso-cli?
+
+Getting a token from enterprise SSO is always a multi-step process — browser flows, OAuth parameters, token endpoints. That friction adds up fast when you're writing scripts, testing APIs, or building with AI agents.
+
+sso-cli turns it into a one-liner. It handles OIDC/OAuth2, token refresh, and credential storage so you don't have to.
+
+---
 
 ## Install
 
@@ -49,55 +66,39 @@ sso-cli solves that by providing a CLI that fetches tokens from any Keycloak/OID
 pip install sso-cli
 ```
 
-After installation, configure PATH automatically:
+If the `sso` command is not found after installation:
 
 ```bash
 sso-setup-path
-
-# Then reload your shell configuration:
-# For zsh/bash: source ~/.zshrc  or  source ~/.bashrc
-# For Windows: restart your terminal
+source ~/.zshrc   # or ~/.bashrc, or restart your terminal on Windows
 ```
-
-**Note:** If the `sso` command is not found after installation, run `sso-setup-path` to automatically add the Python scripts directory to your PATH.
 
 ## Usage
 
 ```bash
-# Get token
+# Get a token
 sso prod user@example.com
 
-# Prefix matching (auto-complete)
+# Prefix matching — type less
 sso p u          # → sso prod user@example.com (if unique)
-sso prod u       # → error if ambiguous
 
 # List roles (JWT + UserInfo/Introspection)
 sso prod user@example.com -r    # users: JWT + UserInfo
 sso prod api-client -r           # clients: JWT + Introspection
 
-# List/Remove
+# List/Remove environments and users
 sso -l env
 sso -l user
 sso -d env prod
 sso -d user prod user@example.com
 
-# Interactive
+# Interactive mode
 sso
 ```
 
-### AI Agent Integration
-
-Ask your AI agent to call any SSO-protected endpoint inline:
-
-```
-Test this endpoint using the bearer token from $(sso dev test@dev.com)
-```
-
-Works with Cursor, Windsurf, Copilot, Claude Code, and any agent that can run shell commands.
-
 ## Config
 
-Configuration is stored in `~/sso_config.yaml` (auto-created by the app). All setup is done through the interactive flow - no manual YAML editing required.
+Configuration is stored in `~/sso_config.yaml` (auto-created on first use). All setup is done through the interactive flow — no manual YAML editing required.
 
 Example structure (for reference):
 
@@ -118,9 +119,11 @@ users:
       client_id: api-client
 ```
 
-Secrets (passwords and client secrets) are stored securely in the system keyring. Environments and users are automatically created on first use through an interactive setup flow. The tool supports optional client_id configuration per environment for Keycloak instances that require it.
+Secrets (passwords and client secrets) are stored securely in the system keyring — never written to disk.
 
 ---
+
+PyPI package: https://pypi.org/project/sso-cli/
 
 ## See Also
 
