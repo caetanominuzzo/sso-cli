@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sso-cli"
 version = "1.4.0"
-description = "Fetch Keycloak/OIDC tokens from the CLI — built for developers and agentic AI workflows"
+description = "Enterprise SSO tokens on demand — for developers, scripts, and AI agents"
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
 authors = [
     {name = "SSO CLI Contributors"}
 ]
-keywords = ["sso", "auth", "keycloak", "cli"]
+keywords = ["sso", "auth", "keycloak", "cli", "oidc", "token", "oauth"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
