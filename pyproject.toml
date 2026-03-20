@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sso-cli"
-version = "1.4.1"
+version = "1.4.2"
 description = "Enterprise SSO tokens on demand — for developers, scripts, and AI agents"
 readme = "README.md"
 requires-python = ">=3.7"
