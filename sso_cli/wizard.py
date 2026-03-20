@@ -12,7 +12,7 @@ from typing import Any, Dict
 import inquirer
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
+from rich.prompt import Confirm, Prompt
 
 from .config import find_config_path, load_config, save_config
 from .secrets import delete_secret, get_secret, store_secret
@@ -53,6 +53,7 @@ def _prompt_env(config: Dict) -> None:
     raw = Prompt.ask("  SSO base URL (e.g. sso.example.com)").strip().rstrip("/")
     if not raw.startswith(("http://", "https://")):
         raw = "https://" + raw
+    console.print("  [dim](case-sensitive in Keycloak)[/dim]")
     realm = Prompt.ask("  Realm name", default="master").strip()
     sso_url = f"{raw}/realms/{realm}"
     console.print(f"  [dim]-> {sso_url}[/dim]")
@@ -86,13 +87,22 @@ def _user_menu(config: Dict, env_key: str, user_key: str) -> str | None:
         id_label = "Email" if auth_type == "user" else "Client ID"
         id_value = ud.get("email") or ud.get("client_id") or current_key
 
+        console.print()
+        console.print(Panel(
+            f"[bold]{current_key}[/bold]\n"
+            f"  Type: [cyan]{auth_type}[/cyan]\n"
+            f"  {id_label}: [cyan]{id_value}[/cyan]",
+            title=f"{env_key} / {current_key}",
+            border_style="dim",
+        ))
+
         options = [
             f"[e] Edit {id_label.lower()}",
             "[s] Edit secret",
             "[-] Delete user",
             _BACK,
         ]
-        choice = _pick(f"{env_key} / {current_key}", options)
+        choice = _pick(f"User: {current_key}", options)
         if choice == "[s] Edit secret":
             secret = getpass.getpass(f"  New secret for {current_key}: ")
             store_secret(env_key, current_key, secret)
@@ -117,6 +127,11 @@ def _user_menu(config: Dict, env_key: str, user_key: str) -> str | None:
                 current_key = new_key
                 console.print(f"  [green]Renamed: {old_key} -> {new_key}[/green]")
         elif choice == "[-] Delete user":
+            if not Confirm.ask(
+                f"  Delete user [bold]{current_key}[/bold] from [bold]{env_key}[/bold]?",
+                default=False,
+            ):
+                continue
             del config[env_key]["users"][current_key]
             delete_secret(env_key, current_key)
             console.print(f"  [yellow]Deleted user '{current_key}'[/yellow]")
@@ -141,24 +156,48 @@ def _env_menu(config: Dict, env_key: str) -> str | None:
         users = env["users"]
         base_url, realm = _parse_sso_url(env["sso_url"])
 
+        console.print()
+        user_lines = ""
+        for uk in users:
+            u = users[uk]
+            uid = u.get("email") or u.get("client_id") or uk
+            user_lines += f"  [cyan]{uk}[/cyan]  ({u['auth_type']}: {uid})\n"
+        if not user_lines:
+            user_lines = "  [dim]No users configured[/dim]\n"
+
+        console.print(Panel(
+            f"[bold]{current_key}[/bold]\n"
+            f"  URL:   [cyan]{base_url}[/cyan]\n"
+            f"  Realm: [cyan]{realm}[/cyan]\n"
+            f"  Users:\n{user_lines.rstrip()}",
+            title=f"Environment: {current_key}",
+            border_style="dim",
+        ))
+
         labels = [f"{uk}  [{users[uk]['auth_type']}]" for uk in users]
         options = (
             labels
             + [
                 "[+] Add user",
-                f"[e] Edit environment",
-                f"[-] Delete environment '{current_key}'",
+                "[e] Edit environment",
+                f"[-] Delete environment",
                 _BACK,
             ]
         )
-        choice = _pick(f"Environment: {current_key}  ({base_url}/realms/{realm})", options)
+        choice = _pick(f"Environment: {current_key}", options)
         if choice == _BACK:
             return current_key
         elif choice == "[+] Add user":
             _prompt_user(config, current_key)
         elif choice == "[e] Edit environment":
             current_key = _edit_env(config, current_key, base_url, realm)
-        elif choice == f"[-] Delete environment '{current_key}'":
+        elif choice == "[-] Delete environment":
+            if not Confirm.ask(
+                f"  Delete environment [bold]{current_key}[/bold] "
+                f"and all its {len(users)} user(s)?",
+                default=False,
+            ):
+                continue
             for uk in list(users):
                 delete_secret(current_key, uk)
             del config[current_key]
@@ -203,6 +242,7 @@ def _edit_env(config: Dict, env_key: str, base_url: str, realm: str) -> str:
             config[env_key]["sso_url"] = f"{new_url}/realms/{realm}"
             console.print(f"  [green]Updated URL: {config[env_key]['sso_url']}[/green]")
     elif choice == "[r] Edit realm":
+        console.print("  [dim](case-sensitive in Keycloak)[/dim]")
         new_realm = Prompt.ask("  Realm name", default=realm).strip()
         if new_realm:
             config[env_key]["sso_url"] = f"{base_url}/realms/{new_realm}"
@@ -243,15 +283,19 @@ def run_setup_wizard(append: bool = False) -> str:
         _prompt_env(config)
 
     while True:
-        env_labels = [f"{ek}  ({len(config[ek]['users'])} user(s))" for ek in config]
-        options = env_labels + ["[+] Add environment", _SAVE_QUIT]
+        env_lines = []
+        for ek in config:
+            base_url, realm = _parse_sso_url(config[ek]["sso_url"])
+            n_users = len(config[ek]["users"])
+            env_lines.append(f"{ek}  ({base_url}, {n_users} user(s))")
+        options = env_lines + ["[+] Add environment", _SAVE_QUIT]
         choice = _pick("Environments", options)
         if choice == _SAVE_QUIT:
             break
         elif choice == "[+] Add environment":
             _prompt_env(config)
         else:
-            env_key = list(config)[env_labels.index(choice)]
+            env_key = list(config)[env_lines.index(choice)]
             _env_menu(config, env_key)  # returns new key or None; config mutated in-place
 
     save_config(config, out_path)

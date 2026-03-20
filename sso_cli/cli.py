@@ -165,7 +165,7 @@ async def main() -> None:
         try:
             await _interactive()
         except Exception as e:
-            console.print(Panel(f"[red]Authentication failed:[/red]\n{e}", border_style="red"))
+            print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
         return
 
