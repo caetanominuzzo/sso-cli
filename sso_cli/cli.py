@@ -5,11 +5,13 @@ SSO CLI entry point.
 import asyncio
 import sys
 import argparse
+import logging
 import os
 from typing import List
 
 import pyperclip
 from rich.console import Console
+from rich.logging import RichHandler
 from rich.panel import Panel
 from rich.text import Text
 
@@ -18,6 +20,25 @@ from .auth import SSOAuthenticator
 from .wizard import ModernSelector, run_setup_wizard
 
 console = Console()
+logger = logging.getLogger("sso_cli")
+
+
+def _setup_logging(verbose: bool) -> None:
+    """Configure logging. Activated by -v/--verbose flag or SSO_DEBUG=1 env var."""
+    enabled = verbose or os.environ.get("SSO_DEBUG", "").strip() in ("1", "true", "yes")
+    if not enabled:
+        return
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[RichHandler(
+            console=Console(stderr=True),
+            rich_tracebacks=True,
+            show_path=False,
+        )],
+    )
+    logger.debug("Verbose mode enabled")
 
 
 def _resolve_prefix(query: str, options: List[str], label: str) -> str:
@@ -41,6 +62,9 @@ def show_help() -> None:
     console.print("  sso                     # interactive")
     console.print("  sso --setup             # add environments/users to existing config")
     console.print("  sso --reset             # backup config + start fresh")
+    console.print("  sso -v [...]            # verbose/debug output")
+    console.print("\n[bold]Environment:[/bold]")
+    console.print("  SSO_DEBUG=1             # enable verbose mode via env var")
     if auth.environments:
         console.print("\n[bold]Environments:[/bold]")
         for k, v in auth.environments.items():
@@ -55,6 +79,7 @@ async def _non_interactive(env_arg: str, user_arg: str, *, roles: bool = False) 
     auth = SSOAuthenticator()
     env_key = _resolve_prefix(env_arg, list(auth.environments), "environment")
     user_key = _resolve_prefix(user_arg, list(auth.environment_users.get(env_key, {})), "user")
+    logger.debug("Resolved env=%s user=%s (roles=%s)", env_key, user_key, roles)
     if roles:
         await _display_roles(auth, env_key, user_key)
     else:
@@ -124,10 +149,13 @@ async def main() -> None:
     parser.add_argument("environment", nargs="?")
     parser.add_argument("user", nargs="?")
     parser.add_argument("-r", "--roles", action="store_true")
+    parser.add_argument("-v", "--verbose", action="store_true", help="enable debug output")
     parser.add_argument("--help", action="store_true")
     parser.add_argument("--setup", action="store_true")
     parser.add_argument("--reset", action="store_true")
     args = parser.parse_args()
+
+    _setup_logging(args.verbose)
 
     if args.help:
         show_help()

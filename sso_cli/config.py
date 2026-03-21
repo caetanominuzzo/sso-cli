@@ -40,8 +40,11 @@ def find_config_path() -> str:
     ]
     for p in candidates:
         if p and os.path.exists(p):
+            logger.debug("Config found at %s", p)
             return p
-    return os.path.expanduser(f"~/{CONFIG_FILENAME}")
+    default = os.path.expanduser(f"~/{CONFIG_FILENAME}")
+    logger.debug("No config found, defaulting to %s", default)
+    return default
 
 
 def load_config() -> Tuple[Environments, EnvironmentUsers]:
@@ -56,6 +59,7 @@ def load_config() -> Tuple[Environments, EnvironmentUsers]:
             f"No config found at {config_path}. Run 'sso --setup' to create one."
         )
 
+    logger.debug("Loading config from %s", config_path)
     with open(config_path, "r", encoding="utf-8") as f:
         raw = yaml.safe_load(f) or {}
 
@@ -86,6 +90,11 @@ def load_config() -> Tuple[Environments, EnvironmentUsers]:
                 "client_id": ud.get("client_id"),
             }
 
+    logger.debug(
+        "Loaded %d environment(s): %s",
+        len(environments),
+        ", ".join(environments),
+    )
     return environments, environment_users
 
 
