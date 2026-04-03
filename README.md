@@ -1,5 +1,7 @@
 # sso-cli
 
+> **sso-cli has evolved into [dev-vault](https://pypi.org/project/dev-vault/)** -- a full developer secret vault with OIDC token support, secret injection, and AI-agent integration. sso-cli will continue to work, but all new features go into dev-vault. Migrate with: `pip install dev-vault && dv migrate sso-cli`
+
 [![PyPI version](https://badge.fury.io/py/sso-cli.svg)](https://pypi.org/project/sso-cli/)
 [![Downloads](https://static.pepy.tech/badge/sso-cli)](https://pepy.tech/project/sso-cli)
 
@@ -127,4 +129,6 @@ PyPI package: https://pypi.org/project/sso-cli/
 
 ## See Also
 
+- [dev-vault](https://pypi.org/project/dev-vault/) — Developer secret vault + OIDC token provider (the evolution of sso-cli).
 - [Agent State](https://agentstate.tech/) — an open toolbox that gives AI agents persistent memory, tools, and organizational context across sessions via a shared Git repository.
+- [terminal-to-here](https://github.com/caetanominuzzo/terminal-to-here) — VS Code extension for quickly navigating terminals to the current file's directory.
